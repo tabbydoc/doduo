@@ -1,34 +1,59 @@
 import argparse
-
+import os
+from collections import defaultdict
+import json
 import pandas as pd
-
 from doduo.doduo import Doduo
 
-if __name__ == "__main__":
+def write_json(path, filename,  result):
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--model",
-        default="wikitable",
-        type=str,
-        choices=["wikitable", "viznet"],
-        help="Pretrained model"
-    )
-    parser.add_argument(
-        "--input",
-        default=None,
-        type=str,
-        help="Input file (csv)"
-    )
-    args = parser.parse_args()
+    if not os.path.exists(path):
+        os.makedirs(path)
 
-    if args.input is None:
-        # Sample table
-        input_df = pd.read_csv(
-            "sample_tables/sample_table1.csv",
-            index_col=0)
-    else:
-        input_df = pd.read_csv(args.input)
+    with open(path + "/" + filename[:-3] + "json", "w", encoding="utf-8") as file:
+        json.dump(result, file, indent=4, ensure_ascii=False)
 
-    doduo = Doduo(args)
-    annotated_df = doduo.annotate_columns(input_df)
+def read_tables(source):
+    with os.scandir(source) as files:
+        file_list = []
+        for file in files:
+            file_list.append(str(file.name))
+    return file_list
+
+def write_total_score(path,  result):
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+    with open(path, "a", encoding="utf-8") as file:
+        file.write(result)
+
+
+
+SOURCE_PATH = './uploads/'
+RESULT_PATH = './result/'
+TOTAL_SCORE_PATH = "./total_score.txt"
+
+
+
+files = read_tables(SOURCE_PATH)
+
+args = argparse.Namespace
+args.model = "viznet" # or args.model = "viznet" wikitable
+doduo = Doduo(args)
+str_type = ""
+
+
+for file in files:
+    df = pd.read_csv(SOURCE_PATH + file)
+    res = doduo.annotate_columns(df)
+    result = defaultdict()
+
+    for i in range(len(res.coltypes)):
+        result[df.columns[i]] = res.coltypes[i]
+        str_type += " " + res.coltypes[i]
+
+
+    write_total_score(TOTAL_SCORE_PATH, file +": "+ str_type + "\n")
+    write_json(RESULT_PATH, file, result)
+    result.clear()
+    str_type = ""

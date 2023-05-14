@@ -46,7 +46,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--max_length",
-        default=128,
+        default=32,
         type=int,
         help=
         "The maximum total input sequence length after tokenization. Sequences longer "
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--batch_size",
-        default=32,
+        default=16,
         type=int,
         help="Batch size",
     )
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument("--tasks",
                         type=str,
                         nargs="+",
-                        default=["sato0"],
+                        default=["turl"],
                         choices=[
                             "sato0", "sato1", "sato2", "sato3", "sato4",
                             "msato0", "msato1", "msato2", "msato3", "msato4",
@@ -298,7 +298,7 @@ if __name__ == "__main__":
         elif "turl" in task:
             if task in ["turl"]:
                 # TODO: Double-check if it is compatible with single/multi-column data
-                filepath = "data/table_col_type_serialized.pkl"
+                filepath = "D:\STUD/4 kurs/4.2\doduo\data/table_col_type_serialized.pkl"
                 if args.single_col:
                     assert task == "turl"  # Single-column model cannot be used for turl-sch
                     # ColumnWise
@@ -394,6 +394,7 @@ if __name__ == "__main__":
     best_vl_macro_f1s = [-1 for _ in range(len(args.tasks))]
     loss_info_lists = [[] for _ in range(len(args.tasks))]
     for epoch in range(num_train_epochs):
+        print("Эпоха номер: ",epoch)
         for k, (task, model, train_dataset, valid_dataset, train_dataloader,
                 valid_dataloader, optimizer, scheduler, loss_fn,
                 loss_info_list) in enumerate(
